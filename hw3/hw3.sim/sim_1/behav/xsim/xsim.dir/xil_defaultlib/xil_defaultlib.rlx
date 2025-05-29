@@ -1,0 +1,12 @@
+0.7
+2020.2
+Nov  8 2024
+22:36:57
+A:/computer_arch/HW03 Skeleton Code/verilog/ALU.v,1744899007,verilog,,A:/computer_arch/HW03 Skeleton Code/verilog/CPU.v,A:/computer_arch/HW03 Skeleton Code/verilog/GLOBAL.v,ALU,,,,,,,,
+A:/computer_arch/HW03 Skeleton Code/verilog/CPU.v,1744902739,verilog,,A:/computer_arch/HW03 Skeleton Code/verilog/CTRL.v,,CPU,,,,,,,,
+A:/computer_arch/HW03 Skeleton Code/verilog/CPU_tb.v,1744517740,verilog,,,,CPU_tb,,,,,,,,
+A:/computer_arch/HW03 Skeleton Code/verilog/CTRL.v,1744901422,verilog,,A:/computer_arch/HW03 Skeleton Code/verilog/MEM.v,A:/computer_arch/HW03 Skeleton Code/verilog/GLOBAL.v,CTRL,,,,,,,,
+A:/computer_arch/HW03 Skeleton Code/verilog/GLOBAL.v,1744517740,verilog,,,,,,,,,,,,
+A:/computer_arch/HW03 Skeleton Code/verilog/MEM.v,1744517740,verilog,,A:/computer_arch/HW03 Skeleton Code/verilog/RF.v,,MEM,,,,,,,,
+A:/computer_arch/HW03 Skeleton Code/verilog/RF.v,1744899036,verilog,,A:/computer_arch/HW03 Skeleton Code/verilog/CPU_tb.v,,RF,,,,,,,,
+A:/computer_arch/hw3/hw3.sim/sim_1/behav/xsim/glbl.v,1724786425,verilog,,,,glbl,,,,,,,,

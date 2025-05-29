@@ -1,0 +1,12 @@
+0.7
+2020.2
+Nov  8 2024
+22:36:57
+A:/computer_arch/hw4/hw4.sim/sim_1/behav/xsim/glbl.v,1724786425,verilog,,,,glbl,,,,,,,,
+A:/computer_arch/lab4_2021045505/verilog/ALU.v,1744899007,verilog,,A:/computer_arch/lab4_2021045505/verilog/CPU.v,A:/computer_arch/lab4_2021045505/verilog/GLOBAL.v,ALU,,,,,,,,
+A:/computer_arch/lab4_2021045505/verilog/CPU.v,1746725256,verilog,,A:/computer_arch/lab4_2021045505/verilog/CTRL.v,,CPU,,,,,,,,
+A:/computer_arch/lab4_2021045505/verilog/CPU_tb.v,1746767111,verilog,,,,CPU_tb,,,,,,,,
+A:/computer_arch/lab4_2021045505/verilog/CTRL.v,1746725346,verilog,,A:/computer_arch/lab4_2021045505/verilog/MEM.v,A:/computer_arch/lab4_2021045505/verilog/GLOBAL.v,CTRL,,,,,,,,
+A:/computer_arch/lab4_2021045505/verilog/GLOBAL.v,1746711683,verilog,,,,,,,,,,,,
+A:/computer_arch/lab4_2021045505/verilog/MEM.v,1746365326,verilog,,A:/computer_arch/lab4_2021045505/verilog/RF.v,,MEM,,,,,,,,
+A:/computer_arch/lab4_2021045505/verilog/RF.v,1744899036,verilog,,A:/computer_arch/lab4_2021045505/verilog/CPU_tb.v,,RF,,,,,,,,

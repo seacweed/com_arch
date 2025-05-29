@@ -1,0 +1,14 @@
+# compile verilog/system verilog design source files
+verilog xil_defaultlib  \
+"../../../../../HW03 Skeleton Code/verilog/ALU.v" \
+"../../../../../HW03 Skeleton Code/verilog/CPU.v" \
+"../../../../../HW03 Skeleton Code/verilog/CTRL.v" \
+"../../../../../HW03 Skeleton Code/verilog/MEM.v" \
+"../../../../../HW03 Skeleton Code/verilog/RF.v" \
+"../../../../../HW03 Skeleton Code/verilog/CPU_tb.v" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort

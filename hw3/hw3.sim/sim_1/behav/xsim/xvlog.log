@@ -1,0 +1,12 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "A:/computer_arch/HW03 Skeleton Code/verilog/ALU.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module ALU
+INFO: [VRFC 10-2263] Analyzing Verilog file "A:/computer_arch/HW03 Skeleton Code/verilog/CPU.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module CPU
+INFO: [VRFC 10-2263] Analyzing Verilog file "A:/computer_arch/HW03 Skeleton Code/verilog/CTRL.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module CTRL
+INFO: [VRFC 10-2263] Analyzing Verilog file "A:/computer_arch/HW03 Skeleton Code/verilog/MEM.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module MEM
+INFO: [VRFC 10-2263] Analyzing Verilog file "A:/computer_arch/HW03 Skeleton Code/verilog/RF.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module RF
+INFO: [VRFC 10-2263] Analyzing Verilog file "A:/computer_arch/HW03 Skeleton Code/verilog/CPU_tb.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module CPU_tb
