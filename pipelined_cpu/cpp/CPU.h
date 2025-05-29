@@ -60,11 +60,13 @@ public:
     ID_EX ID_EX_reg;
     EX_MEM EX_MEM_reg;
     MEM_WB MEM_WB_reg;
+    MEM_WB MEM_WB_reg_sub;
 
 	// Act like a storage element
 	uint32_t PC;
     bool stall;
     bool branch_flush;
+    uint32_t cnt;
 
 
     void IF_stage();
