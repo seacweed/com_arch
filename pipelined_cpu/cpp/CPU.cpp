@@ -15,7 +15,7 @@ void CPU::init(string inst_file) {
     rf.init(false);
     mem.load(inst_file);
     PC = 0;
-	cnt = 10;
+	cnt = 6;
 
     status = CONTINUE;
 
@@ -57,8 +57,16 @@ void CPU::IF_stage() {
     uint32_t inst;
     mem.imemAccess(PC, &inst);
 
-    IF_ID_reg.inst = inst;
     IF_ID_reg.PC_plus_4 = PC + 4;
+    IF_ID_reg.inst = inst;
+
+    if(inst==0){
+        if(cnt==0){
+            status = TERMINATE;
+        }
+        cnt--;
+        return;
+    }
 
     // Predict not taken (PC += 4)
     PC += 4;
@@ -189,6 +197,7 @@ void CPU::MEM_stage() {
     MEM_WB_reg.mem_data = mem_data;
     MEM_WB_reg.wr_addr = EX_MEM_reg.wr_addr;
     MEM_WB_reg.parsed = EX_MEM_reg.parsed;
+    MEM_WB_reg.PC_plus_4 = EX_MEM_reg.PC_plus_4;
 }
 
 // Write Back Stage
@@ -210,4 +219,5 @@ void CPU::WB_stage() {
 
 	WB_last.RegWrite = MEM_WB_reg.ctrl.RegWrite;
     WB_last.wr_addr = MEM_WB_reg.wr_addr;
+    //WB_last.pc = MEM_WB_reg.PC_plus_4-4;
 }

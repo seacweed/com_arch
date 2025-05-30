@@ -43,11 +43,14 @@ struct MEM_WB {
     uint32_t alu_result = 0;
     uint32_t mem_data = 0;
     uint32_t wr_addr = 0;
+    uint32_t PC_plus_4 = 0;
 };
 
 struct WB_sub {
     uint32_t RegWrite = 0;
     uint32_t wr_addr = 0;
+    uint32_t pc = 0;
+
 };
 
 class CPU {
