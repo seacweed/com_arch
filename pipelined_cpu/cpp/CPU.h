@@ -45,6 +45,11 @@ struct MEM_WB {
     uint32_t wr_addr = 0;
 };
 
+struct WB_sub {
+    uint32_t RegWrite = 0;
+    uint32_t wr_addr = 0;
+};
+
 class CPU {
 public:
     CPU(); // Constructor
@@ -60,7 +65,7 @@ public:
     ID_EX ID_EX_reg;
     EX_MEM EX_MEM_reg;
     MEM_WB MEM_WB_reg;
-    MEM_WB MEM_WB_reg_sub;
+    WB_sub WB_last;
 
 	// Act like a storage element
 	uint32_t PC;

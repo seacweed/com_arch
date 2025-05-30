@@ -45,7 +45,7 @@ uint32_t CPU::tick() {
 // Instruction Fetch Stage
 void CPU::IF_stage() {
 	if(stall) {
-		cout<<"stall...\n";
+		//cout<<"stall...\n";
 		return;
 	}
 	if(branch_flush){
@@ -83,12 +83,13 @@ void CPU::ID_stage() {
     ctrl.signExtend(parsed_inst.immi, controls.SignExtend, &ext_imm);
 
 	bool hazard = false;
-	hazard |= HAZARD::checkEXHazard(MEM_WB_reg_sub.ctrl, controls, MEM_WB_reg_sub.parsed, parsed_inst);
-	cout<<"ex h = "<<HAZARD::checkEXHazard(MEM_WB_reg_sub.ctrl, controls, MEM_WB_reg_sub.parsed, parsed_inst)<<"\n";
-	hazard |= HAZARD::checkMEMHazard(EX_MEM_reg.ctrl, controls, EX_MEM_reg.parsed, parsed_inst);
-	cout<<"mem h = "<<HAZARD::checkMEMHazard(EX_MEM_reg.ctrl, controls, EX_MEM_reg.parsed, parsed_inst)<<"\n";
-	hazard |= HAZARD::checkWBHazard(MEM_WB_reg.ctrl, controls, MEM_WB_reg.parsed, parsed_inst);
-	cout<<"wb h = "<<HAZARD::checkWBHazard(MEM_WB_reg.ctrl, controls, MEM_WB_reg.parsed, parsed_inst)<<"\n";
+	hazard |= HAZARD::checkHazard(EX_MEM_reg.ctrl.RegWrite, controls, EX_MEM_reg.wr_addr, parsed_inst);
+	//cout<<"ex h = "<<HAZARD::checkHazard(EX_MEM_reg.ctrl.RegWrite, controls, EX_MEM_reg.wr_addr, parsed_inst)<<"\n";
+	hazard |= HAZARD::checkHazard(MEM_WB_reg.ctrl.RegWrite, controls, MEM_WB_reg.wr_addr, parsed_inst);
+	//cout<<"mem h = "<<HAZARD::checkHazard(MEM_WB_reg.ctrl.RegWrite, controls, MEM_WB_reg.wr_addr, parsed_inst)<<"\n";
+	hazard |= HAZARD::checkHazard(WB_last.RegWrite, controls, WB_last.wr_addr, parsed_inst);
+	//cout<<"wb h = "<<HAZARD::checkHazard(WB_last.RegWrite, controls, WB_last.wr_addr, parsed_inst)<<"\n";
+    //cout<<"PC = "<<hex<<IF_ID_reg.PC_plus_4-4<<'\n';
 
 	// ID_stage 안에서 hazard 발견 시
 	if (hazard) {
@@ -207,6 +208,6 @@ void CPU::WB_stage() {
         rf.write(MEM_WB_reg.wr_addr, wr_data, true);
     }
 
-	MEM_WB_reg_sub.ctrl = MEM_WB_reg.ctrl;
-	MEM_WB_reg_sub.parsed = MEM_WB_reg.parsed;
+	WB_last.RegWrite = MEM_WB_reg.ctrl.RegWrite;
+    WB_last.wr_addr = MEM_WB_reg.wr_addr;
 }

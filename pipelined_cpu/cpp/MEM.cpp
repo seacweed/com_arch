@@ -54,8 +54,8 @@ void MEM::imemAccess(uint32_t addr, uint32_t *inst) {
 	*inst = memory[addr];
 
 	// Instruction finished
-	if (*inst == 0)
-		status = TERMINATE;
+	//if (*inst == 0)
+	//	status = TERMINATE;
 }
 
 void MEM::dmemAccess(uint32_t addr, uint32_t *read_data, uint32_t write_data, uint32_t MemRead, uint32_t MemWrite) {
