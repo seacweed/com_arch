@@ -48,7 +48,7 @@ module CPU(
 	wire [31:0]		mem_read_data;
 
 	// ALU-related wires
-	wire [31:0]		operand1 = rs_data;
+	wire [31:0]		operand1 = ID_EX_rs_data;
 
 	// Define PC
 	reg [31:0]	PC;
@@ -92,7 +92,7 @@ module CPU(
 
 	// ---------- IF Stage ----------- 
 	always @(posedge clk or posedge rst) begin
-        if (rst || flush) begin
+        if (rst) begin
             IF_ID_inst <= 0;
             IF_ID_PC_plus_4 <= 0;
         end else if (!stall) begin
@@ -100,6 +100,14 @@ module CPU(
             IF_ID_PC_plus_4 <= PC + 4;
         end
     end
+/*
+	always @(*) begin
+		if(flush) begin
+            IF_ID_inst <= 0;
+            IF_ID_PC_plus_4 <= 0;
+		end
+	end
+	*/
 
     // -------------------- ID Stage --------------------
     always @(posedge clk or posedge rst) begin
@@ -140,6 +148,12 @@ module CPU(
             ID_EX_SavePC    <= SavePC;
             ID_EX_ALUOp     <= ALUOp;
             ID_EX_wr_addr   <= (RegDst) ? rd : rt;
+
+			if(flush) begin
+				IF_ID_inst <= 0;
+				IF_ID_PC_plus_4 <= 0;
+			end
+
         end
     end
 
