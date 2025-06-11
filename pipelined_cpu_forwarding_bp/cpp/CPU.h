@@ -12,6 +12,8 @@
 struct IF_ID {
     uint32_t inst = 0;
     uint32_t PC_plus_4 = 0;
+    uint32_t predicted_taken = 0;
+    uint32_t predicted_target = 0;
 };
 
 // ID/EX Register
@@ -49,8 +51,16 @@ struct MEM_WB {
 struct WB_sub {
     uint32_t RegWrite = 0;
     uint32_t wr_addr = 0;
+    uint32_t wr_data = 0;
     uint32_t pc = 0;
 
+};
+
+struct BTBEntry {
+    bool valid = false;
+    uint8_t type = 0; // 00: empty, 01: branch, 10: jump
+    uint32_t tag = 0;
+    uint32_t target = 0;
 };
 
 class CPU {
@@ -76,12 +86,15 @@ public:
     bool branch_flush;
     uint32_t cnt;
 
-
     void IF_stage();
     void ID_stage();
     void EX_stage();
     void MEM_stage();
     void WB_stage();
+
+    BTBEntry BTB[64];
+    uint8_t PHT[256];
+
 
 };
 

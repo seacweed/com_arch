@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 				break;
 			case 'r':
 				cpu.rf.dump();
-				cout<<"PC : "<<hex<<cpu.PC<<"\n";
+				cout<<"PC : "<<cpu.PC<<"\n";
 				break;
 			case 'c':
 				while (status == Status::CONTINUE) cpu.tick();

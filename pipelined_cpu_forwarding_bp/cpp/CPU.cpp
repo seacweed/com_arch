@@ -91,11 +91,14 @@ void CPU::ID_stage() {
     ctrl.signExtend(parsed_inst.immi, controls.SignExtend, &ext_imm);
 
 	bool hazard = false;
-	hazard |= HAZARD::checkHazard(EX_MEM_reg.ctrl.RegWrite, controls, EX_MEM_reg.wr_addr, parsed_inst);
+    if (EX_MEM_reg.ctrl.MemRead) {
+        hazard |= HAZARD::checkHazard(EX_MEM_reg.ctrl.RegWrite, controls, EX_MEM_reg.wr_addr, parsed_inst);
+    }
+	//hazard |= HAZARD::checkHazard(EX_MEM_reg.ctrl.RegWrite, controls, EX_MEM_reg.wr_addr, parsed_inst);
 	//cout<<"ex h = "<<HAZARD::checkHazard(EX_MEM_reg.ctrl.RegWrite, controls, EX_MEM_reg.wr_addr, parsed_inst)<<"\n";
-	hazard |= HAZARD::checkHazard(MEM_WB_reg.ctrl.RegWrite, controls, MEM_WB_reg.wr_addr, parsed_inst);
+	//hazard |= HAZARD::checkHazard(MEM_WB_reg.ctrl.RegWrite, controls, MEM_WB_reg.wr_addr, parsed_inst);
 	//cout<<"mem h = "<<HAZARD::checkHazard(MEM_WB_reg.ctrl.RegWrite, controls, MEM_WB_reg.wr_addr, parsed_inst)<<"\n";
-	hazard |= HAZARD::checkHazard(WB_last.RegWrite, controls, WB_last.wr_addr, parsed_inst);
+	//hazard |= HAZARD::checkHazard(WB_last.RegWrite, controls, WB_last.wr_addr, parsed_inst);
 	//cout<<"wb h = "<<HAZARD::checkHazard(WB_last.RegWrite, controls, WB_last.wr_addr, parsed_inst)<<"\n";
     //cout<<"PC = "<<hex<<IF_ID_reg.PC_plus_4-4<<'\n';
 
@@ -108,6 +111,45 @@ void CPU::ID_stage() {
 	else{
 		stall = false;
 	}
+    
+    if (WB_last.RegWrite && WB_last.wr_addr != 0) {
+        if (WB_last.wr_addr == parsed_inst.rs)
+            rs_data = WB_last.wr_data; 
+        if ((!controls.ALUSrc || controls.MemWrite) && WB_last.wr_addr == parsed_inst.rt){
+            //cout<<"WB\n";
+            rt_data = WB_last.wr_data;
+        }
+    }
+
+
+    if (MEM_WB_reg.ctrl.RegWrite && MEM_WB_reg.wr_addr != 0) {
+        if (MEM_WB_reg.wr_addr == parsed_inst.rs){
+            if(MEM_WB_reg.ctrl.MemtoReg)
+                rs_data = MEM_WB_reg.mem_data;
+            else
+                rs_data = MEM_WB_reg.alu_result;
+        }
+        if ((!controls.ALUSrc || controls.MemWrite) && MEM_WB_reg.wr_addr == parsed_inst.rt){
+            if(MEM_WB_reg.ctrl.MemtoReg)
+                rt_data = MEM_WB_reg.mem_data;
+            else 
+                rt_data = MEM_WB_reg.alu_result;
+            //cout<<"MEM\n";
+        }
+    }
+
+    if (EX_MEM_reg.ctrl.RegWrite && EX_MEM_reg.wr_addr != 0) {
+        if (EX_MEM_reg.wr_addr == parsed_inst.rs)
+            rs_data = EX_MEM_reg.alu_result;
+        if ((!controls.ALUSrc || controls.MemWrite) && EX_MEM_reg.wr_addr == parsed_inst.rt){
+            rt_data = EX_MEM_reg.alu_result;
+            //cout<<"EX\n";
+        }
+    }
+
+    //cout<<"rs : "<<hex<<rs_data<<" rt : "<<hex<<rt_data<<" opcode : "<<parsed_inst.opcode<<'\n';
+    //cout<<"rsaddr : "<<parsed_inst.rs<<" rtaddr : "<<parsed_inst.rt<<'\n';
+
 
 	
     ID_EX_reg.PC_plus_4 = IF_ID_reg.PC_plus_4;
@@ -122,6 +164,7 @@ void CPU::ID_stage() {
 	// Jump
     if (controls.Jump) {
 		branch_flush = true;
+        //cout<<"jump : "<<PC<<"\n";
         PC = (IF_ID_reg.PC_plus_4 & 0xF0000000) | (parsed_inst.immj << 2);
         IF_ID_reg = {};
     }
@@ -161,6 +204,7 @@ void CPU::EX_stage() {
 	}
 
 	//cout<<"op1 = "<<hex<<operand1<<" op2 = "<<hex<<operand2<<'\n';
+
 
 
     uint32_t alu_result;
@@ -219,5 +263,6 @@ void CPU::WB_stage() {
 
 	WB_last.RegWrite = MEM_WB_reg.ctrl.RegWrite;
     WB_last.wr_addr = MEM_WB_reg.wr_addr;
+    WB_last.wr_data = wr_data;
     //WB_last.pc = MEM_WB_reg.PC_plus_4-4;
 }
