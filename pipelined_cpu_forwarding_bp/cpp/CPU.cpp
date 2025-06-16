@@ -27,6 +27,13 @@ void CPU::init(string inst_file) {
 
 	stall = false;
 	branch_flush = false;
+
+    for (int i = 0; i < 64; ++i) {
+        BTB[i] = {false, 0, 0, false};
+    }
+    for (int i = 0; i < 256; ++i) {
+        PHT[i] = 1; // 01 (weakly not taken)
+    }
 }
 
 // Tick = one cycle in pipeline
@@ -68,8 +75,22 @@ void CPU::IF_stage() {
         return;
     }
 
-    // Predict not taken (PC += 4)
-    PC += 4;
+    uint32_t idx = (PC >> 2) & 0x3F;
+    uint32_t tag = PC >> 8;
+    bool pred_taken = false;
+    uint32_t pred_target = PC + 4;
+
+    if (BTB[idx].valid && BTB[idx].tag == tag) {
+        if (BTB[idx].isJump) {
+            pred_taken = true;  // jump는 항상 taken으로 간주
+        } else {
+            uint8_t pht_idx = (PC >> 2) & 0xFF;
+            if (PHT[pht_idx] >= 2) pred_taken = true;
+        }
+        if (pred_taken) pred_target = BTB[idx].target;
+    }
+
+    PC = pred_target;
 }
 
 // Instruction Decode Stage
@@ -163,21 +184,56 @@ void CPU::ID_stage() {
 
 	// Jump
     if (controls.Jump) {
-		branch_flush = true;
-        //cout<<"jump : "<<PC<<"\n";
-        PC = (IF_ID_reg.PC_plus_4 & 0xF0000000) | (parsed_inst.immj << 2);
+        branch_flush = true;
+
+        // BTB 업데이트
+        uint32_t idx = ((IF_ID_reg.PC_plus_4 - 4) >> 2) & 0x3F;
+        uint32_t tag = (IF_ID_reg.PC_plus_4 - 4) >> 8;
+        uint32_t target = (IF_ID_reg.PC_plus_4 & 0xFC000000) | (parsed_inst.immj << 2);
+
+        BTB[idx].valid = true;
+        BTB[idx].tag = tag;
+        BTB[idx].target = target;
+        BTB[idx].isJump = true;
+
+        PC = target;
         IF_ID_reg = {};
     }
 
     if (controls.Branch) {
-        bool taken = (parsed_inst.opcode == 0x04 && rs_data == rt_data) || // BEQ
-                     (parsed_inst.opcode == 0x05 && rs_data != rt_data);  // BNE
-        if (taken) {
-			branch_flush = true;
-            PC = IF_ID_reg.PC_plus_4 + (ext_imm << 2);
-            // Flush IF/ID pipeline register
+        bool actual_taken = (parsed_inst.opcode == 0x04 && rs_data == rt_data) ||
+                            (parsed_inst.opcode == 0x05 && rs_data != rt_data);
+
+        uint32_t actual_target = IF_ID_reg.PC_plus_4 + (ext_imm << 2);
+        uint32_t idx = ((IF_ID_reg.PC_plus_4 - 4) >> 2) & 0x3F;
+        uint32_t tag = (IF_ID_reg.PC_plus_4 - 4) >> 8;
+        uint32_t pht_idx = ((IF_ID_reg.PC_plus_4 - 4) >> 2) & 0xFF;
+
+        // BTB 업데이트
+        BTB[idx].valid = true;
+        BTB[idx].tag = tag;
+        BTB[idx].target = actual_target;
+        BTB[idx].isJump = false;
+
+        bool pred_taken = false;
+        if (PHT[pht_idx] >= 2) pred_taken = true;
+
+        if (actual_taken != pred_taken) {
+            branch_flush = true;
+            PC = actual_taken
+                ? actual_target          // 예측 빗나가서 실제로 taken 된 경우
+                : IF_ID_reg.PC_plus_4;   // 예측 빗나가서 실제로 not-taken 된 경우
             IF_ID_reg = {};
         }
+
+        // PHT 업데이트
+        if (actual_taken) {
+            if (PHT[pht_idx] < 3) PHT[pht_idx]++;
+        } else {
+            if (PHT[pht_idx] > 0) PHT[pht_idx]--;
+        }
+
+
     }
 
     // Save into pipeline register

@@ -90,6 +90,72 @@ module CPU(
 
 	//initial cnt = 6;
 
+	// --- Branch Predictor ---
+	reg [31:0] BTB_target [0:63];
+	reg [5:0]  BTB_tag    [0:63];
+	reg        BTB_valid  [0:63];
+	reg        BTB_isJump [0:63];
+	reg [1:0]  PHT        [0:255];
+
+	wire [5:0] BTB_idx = PC[7:2];
+	wire [7:0] PHT_idx = PC[9:2];
+	wire [5:0] BTB_tag_cur = PC[13:8];
+
+	reg        pred_taken;
+	reg [31:0] pred_target;
+
+	always @(*) begin
+		if (BTB_valid[BTB_idx] && BTB_tag[BTB_idx] == BTB_tag_cur) begin
+			if (BTB_isJump[BTB_idx]) begin
+				pred_taken = 1;
+				pred_target = BTB_target[BTB_idx];
+			end else begin
+				pred_taken = (PHT[PHT_idx] >= 2);
+				pred_target = BTB_target[BTB_idx];
+			end
+		end else begin
+			pred_taken = 0;
+			pred_target = PC + 4;
+		end
+	end
+
+	wire branch_cond = (opcode == `OP_BEQ && rs_data == rt_data) ||
+	                   (opcode == `OP_BNE && rs_data != rt_data);
+	wire actual_taken = Branch && branch_cond;
+	wire [31:0] actual_target = IF_ID_PC_plus_4 + (ext_imm << 2);
+
+	wire [31:0] IF_ID_pc_minus_4 = IF_ID_PC_plus_4 - 4;
+	wire [7:0] ID_PHT_idx = IF_ID_pc_minus_4[9:2];
+	wire [5:0] ID_BTB_idx = IF_ID_pc_minus_4[7:2];
+	wire [5:0] ID_BTB_tag = IF_ID_pc_minus_4[13:8];
+	wire pred_taken_ID = (BTB_valid[ID_BTB_idx] && BTB_tag[ID_BTB_idx] == ID_BTB_tag &&
+			(BTB_isJump[ID_BTB_idx] || PHT[ID_PHT_idx] >= 2));
+
+	assign flush = (Branch && (actual_taken != pred_taken_ID)) || Jump || JR;
+
+	always @(posedge clk) begin
+		if (Branch) begin
+			BTB_valid[ID_BTB_idx]  <= 1;
+			BTB_tag[ID_BTB_idx]    <= ID_BTB_tag;
+			BTB_target[ID_BTB_idx] <= actual_target;
+			BTB_isJump[ID_BTB_idx] <= 0;
+		end else if (Jump) begin
+			BTB_valid[ID_BTB_idx]  <= 1;
+			BTB_tag[ID_BTB_idx]    <= ID_BTB_tag;
+			BTB_target[ID_BTB_idx] <= {IF_ID_PC_plus_4[31:28], immj, 2'b00};
+			BTB_isJump[ID_BTB_idx] <= 1;
+		end
+	end
+
+	always @(posedge clk) begin
+		if (Branch) begin
+			if (actual_taken && PHT[ID_PHT_idx] < 3)
+				PHT[ID_PHT_idx] <= PHT[ID_PHT_idx] + 1;
+			else if (!actual_taken && PHT[ID_PHT_idx] > 0)
+				PHT[ID_PHT_idx] <= PHT[ID_PHT_idx] - 1;
+		end
+	end
+
 	// ---------- IF Stage ----------- 
 	always @(posedge clk or posedge rst) begin
         if (rst) begin
@@ -197,14 +263,6 @@ module CPU(
         MEM_WB_MemtoReg   <= EX_MEM_MemtoReg;
         MEM_WB_RegWrite   <= EX_MEM_RegWrite;
     end
-
-    // ---------- Branch Flush 처리 ----------
-    wire branch_taken = Branch && (
-		(opcode == `OP_BEQ && rs_data == rt_data) ||
-		(opcode == `OP_BNE && rs_data != rt_data)
-	);
-    assign flush = branch_taken || Jump || JR;
-
 	// --- Control Unit 연결 ---
 	CTRL ctrl (
 		.opcode(opcode),
@@ -264,7 +322,7 @@ module CPU(
 	always @(*) begin
 		PC_next = PC + 4;
 
-		if (branch_taken)
+		if (actual_taken)
 			PC_next = IF_ID_PC_plus_4 + (ext_imm << 2);
 		else if (Jump)
 			PC_next = {IF_ID_PC_plus_4[31:28], immj, 2'b00};
@@ -279,17 +337,14 @@ module CPU(
 		if (rst) begin
 			PC <= 0;
 			cnt <= 6;
-			term <= 0;
-		end
-		else if (!stall) begin
-			if(inst == 32'b0) begin
-				if(cnt == 0) begin
-					term <= 1;
-				end else begin
-					cnt <= cnt - 1;
-				end
-			end else begin
+		end else if (!stall) begin
+			if (inst == 32'b0) begin
+				if (cnt == 0) term <= 1;
+				else cnt <= cnt - 1;
+			end else if (flush)
 				PC <= PC_next;
+			else begin
+				PC <= pred_target;
 				cnt <= 6;
 			end
 		end

@@ -57,10 +57,10 @@ struct WB_sub {
 };
 
 struct BTBEntry {
-    bool valid = false;
-    uint8_t type = 0; // 00: empty, 01: branch, 10: jump
-    uint32_t tag = 0;
-    uint32_t target = 0;
+    bool valid;
+    uint32_t tag;
+    uint32_t target;
+    bool isJump; // 0 for branch, 1 for jump
 };
 
 class CPU {

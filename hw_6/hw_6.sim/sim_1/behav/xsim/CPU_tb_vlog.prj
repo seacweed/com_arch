@@ -1,0 +1,14 @@
+# compile verilog/system verilog design source files
+verilog xil_defaultlib  \
+"../../../../../pipelined_cpu_forwarding_bp/verilog/ALU.v" \
+"../../../../../pipelined_cpu_forwarding_bp/verilog/CPU.v" \
+"../../../../../pipelined_cpu_forwarding_bp/verilog/CTRL.v" \
+"../../../../../pipelined_cpu_forwarding_bp/verilog/MEM.v" \
+"../../../../../pipelined_cpu_forwarding_bp/verilog/RF.v" \
+"../../../../../pipelined_cpu_forwarding_bp/verilog/CPU_tb.v" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort
