@@ -82,7 +82,7 @@ void CPU::IF_stage() {
 
     if (BTB[idx].valid && BTB[idx].tag == tag) {
         if (BTB[idx].isJump) {
-            pred_taken = true;  // jump는 항상 taken으로 간주
+            pred_taken = true;
         } else {
             uint8_t pht_idx = (PC >> 2) & 0xFF;
             if (PHT[pht_idx] >= 2) pred_taken = true;
@@ -123,10 +123,9 @@ void CPU::ID_stage() {
 	//cout<<"wb h = "<<HAZARD::checkHazard(WB_last.RegWrite, controls, WB_last.wr_addr, parsed_inst)<<"\n";
     //cout<<"PC = "<<hex<<IF_ID_reg.PC_plus_4-4<<'\n';
 
-	// ID_stage 안에서 hazard 발견 시
 	if (hazard) {
-		ID_EX_reg = {};  // bubble
-		stall = true;    // IF 멈추게 함
+		ID_EX_reg = {}; 
+		stall = true; 
 		return;
 	}
 	else{
@@ -186,7 +185,6 @@ void CPU::ID_stage() {
     if (controls.Jump) {
         branch_flush = true;
 
-        // BTB 업데이트
         uint32_t idx = ((IF_ID_reg.PC_plus_4 - 4) >> 2) & 0x3F;
         uint32_t tag = (IF_ID_reg.PC_plus_4 - 4) >> 8;
         uint32_t target = (IF_ID_reg.PC_plus_4 & 0xFC000000) | (parsed_inst.immj << 2);
@@ -209,7 +207,6 @@ void CPU::ID_stage() {
         uint32_t tag = (IF_ID_reg.PC_plus_4 - 4) >> 8;
         uint32_t pht_idx = ((IF_ID_reg.PC_plus_4 - 4) >> 2) & 0xFF;
 
-        // BTB 업데이트
         BTB[idx].valid = true;
         BTB[idx].tag = tag;
         BTB[idx].target = actual_target;
@@ -221,22 +218,18 @@ void CPU::ID_stage() {
         if (actual_taken != pred_taken) {
             branch_flush = true;
             PC = actual_taken
-                ? actual_target          // 예측 빗나가서 실제로 taken 된 경우
-                : IF_ID_reg.PC_plus_4;   // 예측 빗나가서 실제로 not-taken 된 경우
+                ? actual_target  
+                : IF_ID_reg.PC_plus_4; 
             IF_ID_reg = {};
         }
 
-        // PHT 업데이트
         if (actual_taken) {
             if (PHT[pht_idx] < 3) PHT[pht_idx]++;
         } else {
             if (PHT[pht_idx] > 0) PHT[pht_idx]--;
         }
-
-
     }
 
-    // Save into pipeline register
     ID_EX_reg.ctrl = controls;
     ID_EX_reg.parsed = parsed_inst;
     ID_EX_reg.rs_data = rs_data;
@@ -278,7 +271,7 @@ void CPU::EX_stage() {
 	else{
 		EX_MEM_reg.wr_addr = ID_EX_reg.parsed.rt;
 	}
-	// JAL 처리
+	
     if (ID_EX_reg.ctrl.SavePC) {
 		cout<<"savepc : "<<ID_EX_reg.PC_plus_4<<'\n';
         EX_MEM_reg.wr_addr = 31;

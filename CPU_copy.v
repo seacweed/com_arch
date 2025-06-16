@@ -122,7 +122,7 @@ module CPU(
 			if (EX_MEM_wr_addr == rt) rt_data_fwd = EX_MEM_alu_result;
 		end
 
-		// EX stage forwarding (optional)
+		// EX stage forwarding
 		if (ID_EX_RegWrite && ID_EX_wr_addr != 0) begin
 			if (ID_EX_wr_addr == rs) rs_data_fwd = alu_result;
 			if (ID_EX_wr_addr == rt) rt_data_fwd = alu_result;
@@ -180,9 +180,9 @@ module CPU(
 
 	always @(*) begin
 		stall = 0;
-		if (ID_EX_MemRead &&
-			((ID_EX_wr_addr != 0 && ID_EX_wr_addr == rs && read_rs) ||
-			(ID_EX_wr_addr != 0 && ID_EX_wr_addr == rt && read_rt)))
+		if (EX_MEM_MemRead &&
+			((EX_MEM_wr_addr != 0 && EX_MEM_wr_addr == rs && read_rs) ||
+			(EX_MEM_wr_addr != 0 && EX_MEM_wr_addr == rt && read_rt)))
 			stall = 1;
 	end
 
